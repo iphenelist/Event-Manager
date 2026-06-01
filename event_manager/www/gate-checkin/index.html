@@ -1,0 +1,184 @@
+{% extends "templates/web.html" %}
+
+{% block head_include %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<style>
+  body { background: #111827; }
+  .gate-wrap { max-width: 420px; margin: 0 auto; padding: 20px; font-family: sans-serif; }
+  .gate-header { text-align: center; margin-bottom: 20px; }
+  .gate-header h1 { color: #fff; font-size: 20px; margin: 0 0 4px; }
+  .gate-header p  { color: #9CA3AF; font-size: 13px; margin: 0; }
+
+  .stats-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+  .stat-card  { flex: 1; background: #1F2937; border-radius: 10px; padding: 12px; text-align: center; }
+  .stat-num   { font-size: 22px; font-weight: bold; color: #C8960C; }
+  .stat-label { font-size: 11px; color: #9CA3AF; margin-top: 2px; }
+
+  .result-box { border-radius: 16px; padding: 24px; text-align: center; display: none; margin-bottom: 16px; }
+  .result-box.green  { background: #052e16; border: 2px solid #16a34a; }
+  .result-box.red    { background: #450a0a; border: 2px solid #dc2626; }
+  .result-box.orange { background: #431407; border: 2px solid #ea580c; }
+  .result-message    { font-size: 22px; font-weight: bold; color: #fff; margin-bottom: 10px; }
+  .result-detail     { font-size: 14px; color: #d1d5db; margin: 3px 0; }
+  .result-badge      { display:inline-block; background:#C8960C; color:#fff;
+                       padding:3px 14px; border-radius:20px; font-size:12px; margin-top:8px; }
+  .btn-scan-again    { width:100%; padding:11px; border-radius:8px; background:#374151;
+                       color:#fff; border:none; font-size:14px; cursor:pointer; margin-top:12px; }
+
+  .scanner-box { background:#fff; border-radius:14px; overflow:hidden; margin-bottom:16px; }
+  #reader { width:100% !important; }
+
+  .manual-wrap { background:#1F2937; border-radius:12px; padding:16px; margin-bottom:16px; }
+  .manual-wrap label  { color:#9CA3AF; font-size:12px; display:block; margin-bottom:6px; }
+  .manual-wrap input  { width:100%; padding:11px; border-radius:8px; border:1px solid #374151;
+                        background:#111827; color:#fff; font-size:20px; letter-spacing:.25em;
+                        text-align:center; box-sizing:border-box; }
+  .manual-wrap button { width:100%; margin-top:10px; padding:11px; border-radius:8px;
+                        background:#C8960C; color:#fff; border:none; font-size:15px; cursor:pointer; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="gate-wrap">
+  <div class="gate-header">
+    <h1>🎫 {{ page_title }}</h1>
+    <p>Scan QR code kuthibitisha mgeni</p>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-num" id="statValid">0</div>
+      <div class="stat-label">Walioingia</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:#dc2626" id="statInvalid">0</div>
+      <div class="stat-label">Batili</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:#ea580c" id="statDuplicate">0</div>
+      <div class="stat-label">Warudiaji</div>
+    </div>
+  </div>
+
+  <div class="result-box" id="resultBox">
+    <div class="result-message" id="resultMessage"></div>
+    <div class="result-detail"  id="resultName"></div>
+    <div class="result-detail"  id="resultOccasion"></div>
+    <div id="resultBadge"></div>
+    <button class="btn-scan-again" onclick="resetScanner()">Scan Mgeni Mwingine</button>
+  </div>
+
+  <div class="scanner-box" id="scannerBox">
+    <div id="reader"></div>
+  </div>
+
+  <div class="manual-wrap">
+    <label>Au ingiza code kwa mkono:</label>
+    <input type="text" id="manualCode" placeholder="000000" maxlength="10" />
+    <button onclick="validateManual()">Thibitisha Code</button>
+  </div>
+</div>
+
+<script>
+let stats = { valid: 0, invalid: 0, duplicate: 0 };
+let scanner = null;
+let scanning = true;
+
+function initScanner() {
+  scanner = new Html5QrcodeScanner("reader", {
+    fps: 10,
+    qrbox: { width: 240, height: 240 },
+    rememberLastUsedCamera: true
+  });
+  scanner.render(onScanSuccess, () => {});
+}
+
+function onScanSuccess(text) {
+  if (!scanning) return;
+  scanning = false;
+  let code = text, occasion = "";
+  try {
+    const u = new URL(text);
+    code = u.searchParams.get("code") || text;
+    occasion = u.searchParams.get("occasion") || "";
+  } catch(e) {}
+  validateCode(code, occasion);
+}
+
+function validateManual() {
+  const code = document.getElementById("manualCode").value.trim();
+  if (!code) { alert("Tafadhali ingiza code"); return; }
+  scanning = false;
+  validateCode(code, "");
+}
+
+function validateCode(code, occasionName) {
+  fetch("/api/method/event_manager.www.gate-checkin.index.validate_guest", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Frappe-CSRF-Token": "{{ frappe.session.csrf_token }}"
+    },
+    body: JSON.stringify({ guest_code: code, occasion_name: occasionName })
+  })
+  .then(r => r.json())
+  .then(data => showResult(data.message))
+  .catch(() => showResult({ valid: false, status: "Invalid", message: "❌ Hitilafu ya mtandao", color: "red" }));
+}
+
+function showResult(res) {
+  const box = document.getElementById("resultBox");
+  box.className = "result-box " + (res.color || "red");
+  box.style.display = "block";
+  document.getElementById("scannerBox").style.display = "none";
+  document.getElementById("resultMessage").textContent = res.message || "";
+  document.getElementById("resultName").textContent = res.guest_name ? `Mgeni: ${res.guest_name}` : "";
+  document.getElementById("resultOccasion").textContent = res.occasion_name ? `Tukio: ${res.occasion_name}` : "";
+  document.getElementById("resultBadge").innerHTML = res.card_type
+    ? `<span class="result-badge">${res.card_type}</span>` : "";
+
+  if (res.status === "Valid") {
+    stats.valid++;
+    document.getElementById("statValid").textContent = stats.valid;
+    playBeep(880, 150);
+    setTimeout(resetScanner, 3500);
+  } else if (res.status === "Already Used") {
+    stats.duplicate++;
+    document.getElementById("statDuplicate").textContent = stats.duplicate;
+    playBeep(440, 400);
+  } else {
+    stats.invalid++;
+    document.getElementById("statInvalid").textContent = stats.invalid;
+    playBeep(220, 600);
+  }
+}
+
+function resetScanner() {
+  document.getElementById("resultBox").style.display = "none";
+  document.getElementById("scannerBox").style.display = "block";
+  document.getElementById("manualCode").value = "";
+  scanning = true;
+  if (scanner) { try { scanner.clear(); } catch(e) {} }
+  initScanner();
+}
+
+function playBeep(freq, duration) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    osc.connect(ctx.destination);
+    osc.frequency.value = freq;
+    osc.start();
+    setTimeout(() => { osc.stop(); ctx.close(); }, duration);
+  } catch(e) {}
+}
+
+{% if auto_scan and scan_code %}
+window.addEventListener("load", () => {
+  setTimeout(() => validateCode("{{ scan_code }}", "{{ scan_occasion }}"), 600);
+});
+{% endif %}
+
+initScanner();
+</script>
+{% endblock %}

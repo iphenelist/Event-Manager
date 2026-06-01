@@ -1,0 +1,156 @@
+{
+ "actions": [],
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "guest_name",
+  "phone",
+  "card_type",
+  "rsvp_status",
+  "col_break_1",
+  "guest_code",
+  "download_url",
+  "whatsapp_sent",
+  "sent_at",
+  "card_section",
+  "card_image",
+  "checkin_section",
+  "checked_in",
+  "check_in_time",
+  "check_in_status",
+  "actions_section",
+  "generate_card",
+  "send_whatsapp"
+ ],
+ "fields": [
+  {
+   "fieldname": "guest_name",
+   "fieldtype": "Data",
+   "label": "Guest Name",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 3
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "WhatsApp Phone",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2,
+   "description": "Include country code e.g. 255712345678"
+  },
+  {
+   "fieldname": "card_type",
+   "fieldtype": "Select",
+   "label": "Card Type",
+   "options": "SINGLE\nDOUBLE\nVIP\nTABLE",
+   "default": "SINGLE",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "rsvp_status",
+   "fieldtype": "Select",
+   "label": "RSVP Status",
+   "options": "Pending\nConfirmed\nDeclined",
+   "default": "Pending",
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "guest_code",
+   "fieldtype": "Data",
+   "label": "Guest Code",
+   "read_only": 1,
+   "description": "Auto-generated unique 6-digit code"
+  },
+  {
+   "fieldname": "download_url",
+   "fieldtype": "Data",
+   "label": "Card Download URL",
+   "read_only": 1
+  },
+  {
+   "fieldname": "whatsapp_sent",
+   "fieldtype": "Check",
+   "label": "WhatsApp Sent",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sent_at",
+   "fieldtype": "Datetime",
+   "label": "Sent At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "card_section",
+   "fieldtype": "Section Break",
+   "label": "Generated Card"
+  },
+  {
+   "fieldname": "card_image",
+   "fieldtype": "Attach Image",
+   "label": "Card Image",
+   "read_only": 1,
+   "description": "Auto-composed card with name, type, and QR code"
+  },
+  {
+   "fieldname": "checkin_section",
+   "fieldtype": "Section Break",
+   "label": "Gate Check-in"
+  },
+  {
+   "fieldname": "checked_in",
+   "fieldtype": "Check",
+   "label": "Checked In",
+   "read_only": 1
+  },
+  {
+   "fieldname": "check_in_time",
+   "fieldtype": "Datetime",
+   "label": "Check-in Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "check_in_status",
+   "fieldtype": "Select",
+   "label": "Check-in Status",
+   "options": "\nValid\nAlready Used\nInvalid",
+   "read_only": 1
+  },
+  {
+   "fieldname": "actions_section",
+   "fieldtype": "Section Break",
+   "label": "Actions"
+  },
+  {
+   "fieldname": "generate_card",
+   "fieldtype": "Button",
+   "label": "Generate Card"
+  },
+  {
+   "fieldname": "send_whatsapp",
+   "fieldtype": "Button",
+   "label": "Send WhatsApp"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2024-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Event Manager",
+ "name": "Occasion Guest",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

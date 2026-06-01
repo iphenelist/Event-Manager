@@ -25,8 +25,8 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/event_manager/css/event_manager.css"
-# app_include_js = "/assets/event_manager/js/event_manager.js"
+app_include_css = "/assets/event_manager/css/event_manager.css"
+app_include_js = "/assets/event_manager/js/event_manager.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/event_manager/css/event_manager.css"
@@ -138,14 +138,16 @@ app_license = "mit"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+    "Occasion Guest": {
+        "before_insert": "event_manager.utils.qr_generator.before_insert_guest",
+    }
+}
 
+website_route_rules = [
+    {"from_route": "/invitee/download/occasion-card/<guest_code>", "to_route": "invitee/download/occasion-card"},
+    {"from_route": "/gate-checkin", "to_route": "gate-checkin"},
+]
 # Scheduled Tasks
 # ---------------
 

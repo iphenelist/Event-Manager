@@ -1,0 +1,162 @@
+{
+ "actions": [],
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "DocType",
+ "document_type": "Other",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "whatsapp_section",
+  "whatsapp_provider",
+  "whatsapp_api_url",
+  "whatsapp_api_token",
+  "col_break_1",
+  "sender_label",
+  "sender_phone",
+  "download_section",
+  "base_url",
+  "download_path",
+  "col_break_2",
+  "checkin_page_title",
+  "allow_reentry",
+  "card_section",
+  "name_font_size",
+  "name_color",
+  "col_break_3",
+  "card_type_color",
+  "name_font"
+ ],
+ "fields": [
+  {
+   "fieldname": "whatsapp_section",
+   "fieldtype": "Section Break",
+   "label": "WhatsApp Configuration"
+  },
+  {
+   "fieldname": "whatsapp_provider",
+   "fieldtype": "Select",
+   "label": "WhatsApp Provider",
+   "options": "Fonnte\nWaBlas\nCustom",
+   "default": "Fonnte",
+   "reqd": 1
+  },
+  {
+   "fieldname": "whatsapp_api_url",
+   "fieldtype": "Data",
+   "label": "WhatsApp API URL",
+   "description": "e.g. https://api.fonnte.com/send"
+  },
+  {
+   "fieldname": "whatsapp_api_token",
+   "fieldtype": "Password",
+   "label": "WhatsApp API Token"
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sender_label",
+   "fieldtype": "Data",
+   "label": "Sender Label",
+   "description": "e.g. MN Printing — shown at bottom of WhatsApp message"
+  },
+  {
+   "fieldname": "sender_phone",
+   "fieldtype": "Data",
+   "label": "Sender Phone Number"
+  },
+  {
+   "fieldname": "download_section",
+   "fieldtype": "Section Break",
+   "label": "Download & Check-in"
+  },
+  {
+   "fieldname": "base_url",
+   "fieldtype": "Data",
+   "label": "Base URL",
+   "description": "e.g. https://yourdomain.com"
+  },
+  {
+   "fieldname": "download_path",
+   "fieldtype": "Data",
+   "label": "Download Path",
+   "default": "/invitee/download/occasion-card"
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "checkin_page_title",
+   "fieldtype": "Data",
+   "label": "Gate Check-in Page Title",
+   "default": "Occasion Gate Check-in"
+  },
+  {
+   "fieldname": "allow_reentry",
+   "fieldtype": "Check",
+   "label": "Allow Re-entry (QR scan twice)",
+   "default": 0
+  },
+  {
+   "fieldname": "card_section",
+   "fieldtype": "Section Break",
+   "label": "Card Composition Settings"
+  },
+  {
+   "fieldname": "name_font_size",
+   "fieldtype": "Int",
+   "label": "Guest Name Font Size",
+   "default": 36
+  },
+  {
+   "fieldname": "name_color",
+   "fieldtype": "Color",
+   "label": "Guest Name Color",
+   "default": "#8B6914"
+  },
+  {
+   "fieldname": "col_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "card_type_color",
+   "fieldtype": "Color",
+   "label": "Card Type Color",
+   "default": "#C8960C"
+  },
+  {
+   "fieldname": "name_font",
+   "fieldtype": "Select",
+   "label": "Name Font Style",
+   "options": "Default\nSerif\nSans-Serif",
+   "default": "Default"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Event Manager",
+ "name": "Occasion Manager Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 0,
+   "export": 0,
+   "print": 0,
+   "read": 1,
+   "report": 0,
+   "role": "System Manager",
+   "share": 0,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 0
+}

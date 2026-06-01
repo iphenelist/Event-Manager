@@ -1,0 +1,78 @@
+{% extends "templates/web.html" %}
+
+{% block page_content %}
+<div style="max-width:460px; margin:0 auto; padding:20px; font-family:Georgia,serif; text-align:center;">
+
+  <div style="background:#FDF6EE; border-radius:16px; padding:24px; border:1px solid #E8D5BC; margin-bottom:20px;">
+    <p style="font-size:12px; color:#8B6914; letter-spacing:.1em; text-transform:uppercase; margin:0 0 4px;">
+      Wedding Invitation
+    </p>
+    <h1 style="font-size:26px; color:#5C2D1E; margin:0 0 4px;">{{ occasion.couple_names }}</h1>
+    <p style="font-size:13px; color:#8B5E4A; margin:0 0 16px;">{{ occasion.occasion_name }}</p>
+
+    <div style="border-top:1px solid #E8D5BC; border-bottom:1px solid #E8D5BC; padding:12px 0; margin-bottom:16px;">
+      <p style="margin:4px 0; font-size:15px; color:#5C2D1E;">
+        <strong>{{ guest.guest_name }}</strong>
+      </p>
+      <p style="margin:4px 0; font-size:13px; color:#8B5E4A;">
+        Kadi: <strong style="color:#C8960C;">{{ guest.card_type }}</strong>
+        &nbsp;|&nbsp; Code: <strong>{{ guest.guest_code }}</strong>
+      </p>
+    </div>
+
+    <p style="margin:5px 0; font-size:13px; color:#5C2D1E;">
+      📅 {{ frappe.utils.formatdate(occasion.occasion_date, "dd MMMM yyyy") }}
+    </p>
+    <p style="margin:5px 0; font-size:13px; color:#5C2D1E;">
+      ⏰ Saa {{ occasion.occasion_time }} ALASIRI
+    </p>
+    <p style="margin:5px 0; font-size:13px; color:#5C2D1E;">
+      📍 {{ occasion.venue_name }}{% if occasion.venue_address %}, {{ occasion.venue_address }}{% endif %}
+    </p>
+    {% if occasion.dress_code %}
+    <p style="margin:5px 0; font-size:13px; color:#5C2D1E;">
+      👔 Dress Code: {{ occasion.dress_code }}
+    </p>
+    {% endif %}
+  </div>
+
+  {% if card_download_url %}
+  <div style="margin-bottom:20px;">
+    <img src="{{ card_download_url }}"
+         alt="Kadi yako ya mwaliko"
+         style="width:100%; border-radius:12px; border:1px solid #E8D5BC;" />
+  </div>
+
+  <a href="{{ card_download_url }}"
+     download="mwaliko_{{ guest.guest_code }}.jpg"
+     style="display:block; background:#5C2D1E; color:white; padding:14px;
+            border-radius:8px; text-decoration:none; font-size:15px;
+            font-family:sans-serif; margin-bottom:12px;">
+    ⬇️ Download Kadi Yako
+  </a>
+  {% else %}
+  <div style="background:#FFF3CD; padding:16px; border-radius:8px;
+              font-family:sans-serif; font-size:14px; color:#856404; margin-bottom:12px;">
+    Kadi yako inaandaliwa. Tafadhali angalia tena baadaye.
+  </div>
+  {% endif %}
+
+  {% if occasion.venue_location %}
+  <a href="{{ occasion.venue_location }}" target="_blank"
+     style="display:block; background:#fff; color:#5C2D1E; padding:12px;
+            border-radius:8px; text-decoration:none; font-size:14px;
+            font-family:sans-serif; border:1px solid #D4B89A; margin-bottom:12px;">
+    📍 VIEW LOCATION
+  </a>
+  {% endif %}
+
+  {% if occasion.contact_1 or occasion.contact_2 %}
+  <p style="font-size:12px; color:#aaa; font-family:sans-serif; margin-top:16px;">
+    Mawasiliano:
+    {% if occasion.contact_1 %}{{ occasion.contact_1 }}{% endif %}
+    {% if occasion.contact_2 %} | {{ occasion.contact_2 }}{% endif %}
+  </p>
+  {% endif %}
+
+</div>
+{% endblock %}
