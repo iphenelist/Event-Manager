@@ -1,0 +1,71 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _("My Events") }}{% endblock %}
+
+{% block page_content %}
+<div class="ev-wrap">
+    <header class="ev-header">
+        <h1>{{ _("My Events") }}</h1>
+        <p>{{ _("Track RSVPs and gate check-ins for your event.") }}</p>
+    </header>
+
+    {% if occasions %}
+    <div class="ev-grid">
+        {% for occasion in occasions %}
+        <a class="ev-card" href="/app/occasion/{{ occasion.name }}">
+            <div class="ev-card-media">
+                {% if occasion.card_preview_image %}
+                <img src="{{ occasion.card_preview_image }}" alt="{{ occasion.occasion_name }}" loading="lazy">
+                {% else %}
+                <div class="ev-card-placeholder">🎫</div>
+                {% endif %}
+            </div>
+            <div class="ev-card-body">
+                <h2>{{ occasion.occasion_name }}</h2>
+                <p class="ev-card-sub">
+                    {% if occasion.occasion_date %}{{ frappe.format_date(occasion.occasion_date) }} ·{% endif %}
+                    {{ occasion.venue_name or "" }}
+                </p>
+                <p class="ev-card-stats">
+                    {{ _("{0} guests").format(occasion.guest_count) }} ·
+                    {{ _("{0} checked in").format(occasion.checked_in_count) }}
+                </p>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="ev-empty">
+        <div class="ev-empty-icon">🎫</div>
+        <h2>{{ _("No events yet") }}</h2>
+        <p>{{ _("Your event will appear here once it's set up by our team.") }}</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .ev-wrap { max-width: 1080px; margin: 0 auto; padding: 1.5rem 1rem 4rem; background: var(--bg-color); color: var(--text-color); }
+    .ev-header { padding: 1rem 0 2rem; }
+    .ev-header h1 { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; margin: 0; color: var(--text-color); }
+    .ev-header p { color: var(--text-muted); margin: .35rem 0 0; }
+
+    .ev-grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+    .ev-card {
+        display: block; border-radius: 14px; overflow: hidden; text-decoration: none;
+        background: var(--card-bg); border: 1px solid var(--border-color); color: inherit;
+        box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,.1)); transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .ev-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md, 0 8px 24px rgba(0,0,0,.15)); text-decoration: none; }
+    .ev-card-media { aspect-ratio: 4 / 3; background: var(--bg-color); }
+    .ev-card-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ev-card-placeholder { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 2.5rem; opacity: .5; }
+    .ev-card-body { padding: .9rem 1rem 1.1rem; }
+    .ev-card-body h2 { font-size: 1rem; font-weight: 700; margin: 0; color: var(--text-color); }
+    .ev-card-sub { font-size: .8rem; color: var(--text-muted); margin: .3rem 0 0; }
+    .ev-card-stats { font-size: .78rem; color: #D4A017; font-weight: 600; margin: .4rem 0 0; }
+
+    .ev-empty { text-align: center; padding: 5rem 1rem; color: var(--text-muted); }
+    .ev-empty-icon { font-size: 3rem; margin-bottom: .75rem; opacity: .6; }
+    .ev-empty h2 { font-size: 1.2rem; color: var(--text-color); }
+</style>
+{% endblock %}

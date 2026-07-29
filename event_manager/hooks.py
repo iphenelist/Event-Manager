@@ -5,6 +5,14 @@ app_description = "A frappe custom app which enables to automate invitations via
 app_email = "innocentphenelist@gmail.com"
 app_license = "mit"
 
+# Fixtures
+# --------
+# Ship the client/vendor portal role with the app so migrate creates it on a
+# fresh site (mirrors gallery_store's "Gallery Client" role fixture).
+fixtures = [
+	{"dt": "Role", "filters": [["name", "in", ["Occasion Client"]]]},
+]
+
 # Apps
 # ------------------
 
@@ -60,9 +68,10 @@ app_include_js = "/assets/event_manager/js/event_manager.js"
 # home_page = "login"
 
 # website user home page (by Role)
-# role_home_page = {
-# 	"Role": "home_page"
-# }
+# Send Occasion Client users to their portal after login (they have no Desk access).
+role_home_page = {
+	"Occasion Client": "my-occasions",
+}
 
 # Generators
 # ----------
@@ -124,15 +133,19 @@ app_include_js = "/assets/event_manager/js/event_manager.js"
 
 # Permissions
 # -----------
-# Permissions evaluated in scripted ways
+# Row-level isolation for Occasion:
+# - permission_query_conditions filters every list query (Desk, REST
+#   /api/resource, frappe.get_list) down to the logged-in client's own
+#   assigned Occasion(s). Staff (System Manager / Event Manager) are
+#   unrestricted, exactly as before.
+# - has_permission guards single-document access.
+permission_query_conditions = {
+	"Occasion": "event_manager.permissions.occasion_query_conditions",
+}
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+has_permission = {
+	"Occasion": "event_manager.permissions.occasion_has_permission",
+}
 
 # Document Events
 # ---------------
@@ -147,6 +160,7 @@ doc_events = {
 website_route_rules = [
     {"from_route": "/invitee/download/occasion-card/<guest_code>", "to_route": "invitee/download/occasion-card"},
     {"from_route": "/gate-checkin", "to_route": "gate-checkin"},
+    {"from_route": "/my-event/<path:occasion>", "to_route": "my-occasion"},
 ]
 # Scheduled Tasks
 # ---------------

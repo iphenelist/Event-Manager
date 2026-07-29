@@ -8,8 +8,7 @@ def generate_qr(guest_code: str, occasion_name: str) -> BytesIO:
     Generate a QR code image for a guest.
     Encodes the gate check-in URL so scanning opens the validation page directly.
     """
-    settings = frappe.get_single("Occasion Manager Settings")
-    base_url = (settings.base_url or frappe.utils.get_url()).rstrip("/")
+    base_url = frappe.utils.get_url().rstrip("/")
 
     qr_data = (
         f"{base_url}/gate-checkin"

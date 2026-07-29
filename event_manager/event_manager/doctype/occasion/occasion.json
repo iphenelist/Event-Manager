@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_copy": 1,
  "allow_import": 1,
  "autoname": "field:occasion_name",
  "creation": "2024-01-01 00:00:00",
@@ -20,11 +21,33 @@
   "col_break_2",
   "contact_2",
   "status",
+  "client_user",
+  "card_tab",
   "card_section",
   "card_design",
+  "design_layout_btn",
+  "column_break_liqk",
   "card_design_preview",
+  "card_layout",
+  "card_preview_image",
+  "card_style_section",
+  "name_font_size",
+  "name_font",
+  "col_break_card_style",
+  "card_type_color",
+  "name_color",
+  "guests_tab",
   "guests_section",
-  "guests"
+  "guests",
+  "generate_cards_btn",
+  "guest_actions_section",
+  "send_whatsapp_btn",
+  "col_break_guest_actions",
+  "send_sms_btn",
+  "checkin_section",
+  "allow_reentry",
+  "ocassion_statistics_tab",
+  "statistics_html"
  ],
  "fields": [
   {
@@ -113,6 +136,13 @@
    "options": "Draft\nActive\nCompleted"
   },
   {
+   "description": "The client/vendor User account allowed to view this event's status on the portal (/my-occasions). Leave blank if this event has no portal access.",
+   "fieldname": "client_user",
+   "fieldtype": "Link",
+   "label": "Client / Vendor",
+   "options": "User"
+  },
+  {
    "fieldname": "card_section",
    "fieldtype": "Section Break",
    "label": "Invitation Card Design"
@@ -127,22 +157,137 @@
    "fieldname": "card_design_preview",
    "fieldtype": "Image",
    "label": "Preview",
-   "options": "card_design"
+   "options": "card_preview_image"
+  },
+  {
+   "description": "JSON positions (as % of image width/height) for guest name, card type, code, and QR code, set via the Design Card Layout button. Leave blank to use the default bottom-left/bottom-right layout.",
+   "fieldname": "card_layout",
+   "fieldtype": "Long Text",
+   "hidden": 1,
+   "label": "Card Layout (JSON)"
+  },
+  {
+   "description": "Sample composited card (guest name/type/code/QR overlaid per the current layout). Regenerated whenever the layout is saved.",
+   "fieldname": "card_preview_image",
+   "fieldtype": "Attach Image",
+   "hidden": 1,
+   "label": "Card Preview Image (Composited)"
+  },
+  {
+   "fieldname": "generate_cards_btn",
+   "fieldtype": "Button",
+   "label": "Generate All Cards"
+  },
+  {
+   "fieldname": "design_layout_btn",
+   "fieldtype": "Button",
+   "label": "\ud83c\udfa8 Design Card Layout"
+  },
+  {
+   "description": "Used only when no custom Card Layout has been designed",
+   "fieldname": "card_style_section",
+   "fieldtype": "Section Break",
+   "label": "Card Text Style"
+  },
+  {
+   "default": "36",
+   "fieldname": "name_font_size",
+   "fieldtype": "Int",
+   "label": "Guest Name Font Size"
+  },
+  {
+   "default": "#8B6914",
+   "fieldname": "name_color",
+   "fieldtype": "Color",
+   "label": "Guest Name Color"
+  },
+  {
+   "fieldname": "col_break_card_style",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "#C8960C",
+   "fieldname": "card_type_color",
+   "fieldtype": "Color",
+   "label": "Card Type Color"
+  },
+  {
+   "default": "Default",
+   "fieldname": "name_font",
+   "fieldtype": "Select",
+   "label": "Name Font Style",
+   "options": "Default\nSerif\nSans-Serif"
+  },
+  {
+   "fieldname": "guest_actions_section",
+   "fieldtype": "Section Break",
+   "label": "Guest Actions"
+  },
+  {
+   "fieldname": "send_whatsapp_btn",
+   "fieldtype": "Button",
+   "label": "Send All WhatsApp"
+  },
+  {
+   "fieldname": "col_break_guest_actions",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "send_sms_btn",
+   "fieldtype": "Button",
+   "label": "Send All SMS"
   },
   {
    "fieldname": "guests_section",
-   "fieldtype": "Section Break",
-   "label": "Guest List"
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "guests",
    "fieldtype": "Table",
    "label": "Guests",
    "options": "Occasion Guest"
+  },
+  {
+   "fieldname": "checkin_section",
+   "fieldtype": "Section Break",
+   "label": "Gate Check-in Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "allow_reentry",
+   "fieldtype": "Check",
+   "label": "Allow Re-entry (QR scan twice)"
+  },
+  {
+   "fieldname": "card_tab",
+   "fieldtype": "Tab Break",
+   "label": "Card"
+  },
+  {
+   "fieldname": "guests_tab",
+   "fieldtype": "Tab Break",
+   "label": "Guests List"
+  },
+  {
+   "fieldname": "ocassion_statistics_tab",
+   "fieldtype": "Tab Break",
+   "label": "Ocassion statistics"
+  },
+  {
+   "fieldname": "statistics_html",
+   "fieldtype": "HTML",
+   "label": "Statistics"
+  },
+  {
+   "fieldname": "column_break_liqk",
+   "fieldtype": "Column Break"
   }
  ],
+ "hide_toolbar": 1,
+ "image_field": "card_design",
  "links": [],
- "modified": "2026-06-01 12:02:04.948805",
+ "make_attachments_public": 1,
+ "modified": "2026-07-27 17:47:32.803674",
  "modified_by": "Administrator",
  "module": "Event Manager",
  "name": "Occasion",
@@ -171,6 +316,10 @@
    "role": "Event Manager",
    "share": 1,
    "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Occasion Client"
   }
  ],
  "row_format": "Dynamic",

@@ -7,12 +7,14 @@ from frappe.model.document import Document
 class Occasion(Document):
 
     def before_save(self):
-        settings = frappe.get_single("Occasion Manager Settings")
-        base = (settings.base_url or "").rstrip("/")
-        path = (settings.download_path or "/invitee/download/occasion-card").rstrip("/")
+        if self.card_design and not self.card_preview_image:
+            # Sane default until the layout designer generates a styled composite
+            self.card_preview_image = self.card_design
+
+        base = frappe.utils.get_url().rstrip("/")
         for guest in self.guests:
             if guest.guest_code and not guest.download_url:
-                guest.download_url = f"{base}{path}/{guest.guest_code}"
+                guest.download_url = f"{base}/invitee/download/occasion-card/{guest.guest_code}"
 
     def _generate_unique_code(self):
         for _ in range(100):
@@ -42,7 +44,7 @@ class Occasion(Document):
     @frappe.whitelist()
     def send_all_whatsapp(self):
         """Send WhatsApp messages to all guests not yet sent"""
-        from event_manager.utils.whatsapp_sender import send_invitation
+        from event_manager.api.whatsapp import send_invitation
         results = {"success": 0, "failed": 0, "errors": []}
         for guest in self.guests:
             if guest.whatsapp_sent:
@@ -52,6 +54,26 @@ class Occasion(Document):
                 frappe.db.set_value("Occasion Guest", guest.name, {
                     "whatsapp_sent": 1,
                     "sent_at": frappe.utils.now()
+                })
+                results["success"] += 1
+            except Exception as e:
+                results["failed"] += 1
+                results["errors"].append(f"{guest.guest_name}: {str(e)}")
+        return results
+
+    @frappe.whitelist()
+    def send_all_sms(self):
+        """Send SMS invitations to all guests not yet sent"""
+        from event_manager.api.sms import send_invitation
+        results = {"success": 0, "failed": 0, "errors": []}
+        for guest in self.guests:
+            if guest.sms_sent:
+                continue
+            try:
+                send_invitation(self, guest)
+                frappe.db.set_value("Occasion Guest", guest.name, {
+                    "sms_sent": 1,
+                    "sms_sent_at": frappe.utils.now()
                 })
                 results["success"] += 1
             except Exception as e:

@@ -2,8 +2,7 @@ import frappe
 
 
 def get_context(context):
-    settings = frappe.get_single("Occasion Manager Settings")
-    context.page_title = settings.checkin_page_title or "Occasion Gate Check-in"
+    context.page_title = "Occasion Gate Check-in"
     context.no_cache = 1
     code = frappe.form_dict.get("code")
     occasion = frappe.form_dict.get("occasion")
@@ -41,9 +40,9 @@ def validate_guest(guest_code: str, occasion_name: str = None):
         }
 
     guest = results[0]
-    settings = frappe.get_single("Occasion Manager Settings")
+    allow_reentry = frappe.db.get_value("Occasion", guest["parent"], "allow_reentry")
 
-    if guest["checked_in"] and not settings.allow_reentry:
+    if guest["checked_in"] and not allow_reentry:
         return {
             "valid": False,
             "status": "Already Used",

@@ -1,6 +1,6 @@
 {
  "actions": [],
- "creation": "2024-01-01 00:00:00.000000",
+ "creation": "2024-01-01 00:00:00",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -8,69 +8,76 @@
   "guest_name",
   "phone",
   "card_type",
-  "rsvp_status",
+  "whatsapp_sent",
+  "sms_sent",
   "col_break_1",
   "guest_code",
-  "download_url",
-  "whatsapp_sent",
+  "rsvp_status",
   "sent_at",
+  "sms_sent_at",
   "card_section",
   "card_image",
+  "column_break_mn0s",
+  "download_url",
   "checkin_section",
   "checked_in",
-  "check_in_time",
   "check_in_status",
+  "column_break_6nlu",
+  "check_in_time",
   "actions_section",
   "generate_card",
-  "send_whatsapp"
+  "column_break_3ett",
+  "send_whatsapp",
+  "column_break_qv1b",
+  "send_sms"
  ],
  "fields": [
   {
+   "columns": 3,
    "fieldname": "guest_name",
    "fieldtype": "Data",
-   "label": "Guest Name",
-   "reqd": 1,
    "in_list_view": 1,
-   "columns": 3
+   "label": "Guest Name",
+   "reqd": 1
   },
   {
+   "columns": 2,
+   "description": "Include country code e.g. 255712345678",
    "fieldname": "phone",
    "fieldtype": "Data",
-   "label": "WhatsApp Phone",
-   "reqd": 1,
    "in_list_view": 1,
-   "columns": 2,
-   "description": "Include country code e.g. 255712345678"
+   "label": "WhatsApp Phone",
+   "reqd": 1
   },
   {
+   "columns": 2,
+   "default": "SINGLE",
    "fieldname": "card_type",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Card Type",
    "options": "SINGLE\nDOUBLE\nVIP\nTABLE",
-   "default": "SINGLE",
-   "reqd": 1,
-   "in_list_view": 1,
-   "columns": 2
+   "reqd": 1
   },
   {
+   "columns": 2,
+   "default": "Pending",
    "fieldname": "rsvp_status",
    "fieldtype": "Select",
-   "label": "RSVP Status",
-   "options": "Pending\nConfirmed\nDeclined",
-   "default": "Pending",
    "in_list_view": 1,
-   "columns": 2
+   "label": "RSVP Status",
+   "options": "Pending\nConfirmed\nDeclined"
   },
   {
    "fieldname": "col_break_1",
    "fieldtype": "Column Break"
   },
   {
+   "description": "Auto-generated unique 6-digit code",
    "fieldname": "guest_code",
    "fieldtype": "Data",
    "label": "Guest Code",
-   "read_only": 1,
-   "description": "Auto-generated unique 6-digit code"
+   "read_only": 1
   },
   {
    "fieldname": "download_url",
@@ -79,8 +86,10 @@
    "read_only": 1
   },
   {
+   "default": "0",
    "fieldname": "whatsapp_sent",
    "fieldtype": "Check",
+   "in_list_view": 1,
    "label": "WhatsApp Sent",
    "read_only": 1
   },
@@ -91,16 +100,30 @@
    "read_only": 1
   },
   {
+   "default": "0",
+   "fieldname": "sms_sent",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "SMS Sent",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sms_sent_at",
+   "fieldtype": "Datetime",
+   "label": "SMS Sent At",
+   "read_only": 1
+  },
+  {
    "fieldname": "card_section",
    "fieldtype": "Section Break",
    "label": "Generated Card"
   },
   {
+   "description": "Auto-composed card with name, type, and QR code",
    "fieldname": "card_image",
    "fieldtype": "Attach Image",
    "label": "Card Image",
-   "read_only": 1,
-   "description": "Auto-composed card with name, type, and QR code"
+   "read_only": 1
   },
   {
    "fieldname": "checkin_section",
@@ -108,10 +131,11 @@
    "label": "Gate Check-in"
   },
   {
+   "default": "0",
    "fieldname": "checked_in",
    "fieldtype": "Check",
-   "label": "Checked In",
-   "read_only": 1
+   "in_list_view": 1,
+   "label": "Checked In"
   },
   {
    "fieldname": "check_in_time",
@@ -140,17 +164,40 @@
    "fieldname": "send_whatsapp",
    "fieldtype": "Button",
    "label": "Send WhatsApp"
+  },
+  {
+   "fieldname": "send_sms",
+   "fieldtype": "Button",
+   "label": "Send SMS"
+  },
+  {
+   "fieldname": "column_break_3ett",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_qv1b",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_mn0s",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_6nlu",
+   "fieldtype": "Column Break"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2024-01-01 00:00:00.000000",
+ "modified": "2026-07-27 11:27:06.025758",
  "modified_by": "Administrator",
  "module": "Event Manager",
  "name": "Occasion Guest",
  "owner": "Administrator",
  "permissions": [],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

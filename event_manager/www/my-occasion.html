@@ -1,0 +1,110 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ doc.occasion_name }}{% endblock %}
+
+{% block page_content %}
+<div class="eo-wrap">
+    <a class="eo-back" href="/my-occasions">← {{ _("My Events") }}</a>
+
+    <header class="eo-header">
+        <h1>🎫 {{ doc.occasion_name }}</h1>
+        <p>{{ doc.couple_names or "" }}</p>
+    </header>
+
+    <div class="eo-card eo-details">
+        <div class="eo-detail-row">
+            <span class="eo-label">{{ _("Date") }}</span>
+            <span>{% if doc.occasion_date %}{{ frappe.format_date(doc.occasion_date) }}{% endif %} {{ doc.occasion_time or "" }}</span>
+        </div>
+        <div class="eo-detail-row">
+            <span class="eo-label">{{ _("Venue") }}</span>
+            <span>{{ doc.venue_name or "" }}</span>
+        </div>
+        {% if doc.venue_address %}
+        <div class="eo-detail-row">
+            <span class="eo-label">{{ _("Address") }}</span>
+            <span>{{ doc.venue_address }}</span>
+        </div>
+        {% endif %}
+        {% if doc.dress_code %}
+        <div class="eo-detail-row">
+            <span class="eo-label">{{ _("Dress Code") }}</span>
+            <span>{{ doc.dress_code }}</span>
+        </div>
+        {% endif %}
+        <div class="eo-detail-row">
+            <span class="eo-label">{{ _("Status") }}</span>
+            <span>{{ doc.status }}</span>
+        </div>
+    </div>
+
+    <div class="eo-stats">
+        <div class="eo-stat"><div class="eo-stat-num">{{ total }}</div><div class="eo-stat-label">{{ _("Total Guests") }}</div></div>
+        <div class="eo-stat"><div class="eo-stat-num" style="color:#0ca30c">{{ confirmed }}</div><div class="eo-stat-label">{{ _("Confirmed") }}</div></div>
+        <div class="eo-stat"><div class="eo-stat-num" style="color:#fab219">{{ pending }}</div><div class="eo-stat-label">{{ _("Pending") }}</div></div>
+        <div class="eo-stat"><div class="eo-stat-num" style="color:#d03b3b">{{ declined }}</div><div class="eo-stat-label">{{ _("Declined") }}</div></div>
+        <div class="eo-stat"><div class="eo-stat-num" style="color:#D4A017">{{ checked_in }}</div><div class="eo-stat-label">{{ _("Checked In") }}</div></div>
+    </div>
+
+    <div class="eo-card">
+        <div class="eo-table-title">{{ _("Guest List") }}</div>
+        {% if guests %}
+        <div class="eo-table-scroll">
+            <table class="eo-table">
+                <thead>
+                    <tr>
+                        <th>{{ _("Name") }}</th>
+                        <th>{{ _("Card Type") }}</th>
+                        <th>{{ _("RSVP") }}</th>
+                        <th>{{ _("Checked In") }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for g in guests %}
+                    <tr>
+                        <td>{{ g.guest_name }}</td>
+                        <td>{{ g.card_type }}</td>
+                        <td><span class="eo-badge eo-badge-{{ g.rsvp_status|lower }}">{{ g.rsvp_status }}</span></td>
+                        <td>{% if g.checked_in %}✅{% else %}—{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="eo-empty-note">{{ _("No guests added yet.") }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    body { background: #0B0F19; }
+    .eo-wrap { max-width: 780px; margin: 0 auto; padding: 1.5rem 1rem 4rem; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #F3F4F6; }
+    .eo-back { display: inline-block; color: #8B93A7; text-decoration: none; font-size: .85rem; margin-bottom: 1rem; }
+    .eo-back:hover { color: #F3F4F6; text-decoration: none; }
+    .eo-header { text-align: center; margin-bottom: 1.5rem; }
+    .eo-header h1 { font-size: 1.4rem; font-weight: 800; margin: 0 0 .25rem; color: #fff; }
+    .eo-header p { color: #8B93A7; margin: 0; font-size: .9rem; }
+
+    .eo-card { background: #151B2B; border: 1px solid #2A3350; border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: 1.25rem; }
+    .eo-detail-row { display: flex; justify-content: space-between; gap: 1rem; padding: .45rem 0; border-bottom: 1px solid #2A3350; font-size: .88rem; }
+    .eo-detail-row:last-child { border-bottom: none; }
+    .eo-label { color: #8B93A7; font-weight: 600; }
+
+    .eo-stats { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .eo-stat { flex: 1; min-width: 100px; background: #151B2B; border: 1px solid #2A3350; border-radius: 12px; padding: .9rem .6rem; text-align: center; }
+    .eo-stat-num { font-size: 1.4rem; font-weight: 800; color: #2a78d6; }
+    .eo-stat-label { font-size: .7rem; color: #8B93A7; margin-top: .25rem; font-weight: 600; }
+
+    .eo-table-title { font-size: .9rem; font-weight: 700; margin-bottom: .75rem; }
+    .eo-table-scroll { overflow-x: auto; }
+    .eo-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    .eo-table th { text-align: left; color: #8B93A7; font-weight: 600; padding: .5rem .4rem; border-bottom: 1px solid #2A3350; }
+    .eo-table td { padding: .5rem .4rem; border-bottom: 1px solid #1C2438; }
+    .eo-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: .72rem; font-weight: 700; }
+    .eo-badge-confirmed { background: rgba(12,163,12,.15); color: #16d016; }
+    .eo-badge-pending { background: rgba(250,178,25,.15); color: #fab219; }
+    .eo-badge-declined { background: rgba(208,59,59,.15); color: #f16969; }
+    .eo-empty-note { color: #8B93A7; font-size: .85rem; margin: 0; }
+</style>
+{% endblock %}
