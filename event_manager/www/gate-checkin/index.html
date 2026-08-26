@@ -168,6 +168,7 @@ let stats = { valid: 0, invalid: 0, duplicate: 0 };
 let scanner = null;
 let scanning = true;
 const secureContext = window.isSecureContext;
+const PAGE_OCCASION = "{{ scan_occasion }}";
 
 function initScanner() {
   document.getElementById("liveScannerCard").style.display = secureContext ? "block" : "none";
@@ -190,11 +191,11 @@ function onScanSuccess(text) {
 }
 
 function parseAndValidate(text) {
-  let code = text, occasion = "";
+  let code = text, occasion = PAGE_OCCASION;
   try {
     const u = new URL(text);
     code = u.searchParams.get("code") || text;
-    occasion = u.searchParams.get("occasion") || "";
+    occasion = u.searchParams.get("occasion") || PAGE_OCCASION;
   } catch(e) {}
   validateCode(code, occasion);
 }
@@ -202,8 +203,12 @@ function parseAndValidate(text) {
 function validateManual() {
   const code = document.getElementById("manualCode").value.trim();
   if (!code) { alert("Tafadhali ingiza code"); return; }
+  if (!PAGE_OCCASION) {
+    alert("Ukurasa huu haujaunganishwa na tukio maalum. Tumia kiungo cha Gate Check-in cha tukio lako (kina ?occasion=... ) au scan QR code.");
+    return;
+  }
   scanning = false;
-  validateCode(code, "");
+  validateCode(code, PAGE_OCCASION);
 }
 
 function validateCode(code, occasionName) {

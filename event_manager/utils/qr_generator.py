@@ -30,8 +30,3 @@ def generate_qr(guest_code: str, occasion_name: str) -> BytesIO:
     img.save(buffer, format="PNG")
     buffer.seek(0)
     return buffer
-
-
-def before_insert_guest(doc, method=None):
-    """Hook placeholder — code generation handled in OccasionGuest controller"""
-    pass

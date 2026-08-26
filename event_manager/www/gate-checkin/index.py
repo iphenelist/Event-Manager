@@ -1,4 +1,5 @@
 import frappe
+from frappe.rate_limiter import rate_limit
 
 
 def get_context(context):
@@ -12,14 +13,21 @@ def get_context(context):
 
 
 @frappe.whitelist(allow_guest=True)
+@rate_limit(limit=20, seconds=60)
 def validate_guest(guest_code: str, occasion_name: str = None):
-    """Validate a guest QR code at the gate"""
-    if not guest_code:
+    """Validate a guest QR code at the gate.
+
+    occasion_name is required: without it this would search guest codes
+    sitewide, letting one occasion's gate page check in (and thereby
+    invalidate) another occasion's guests.
+    """
+    if not guest_code or not occasion_name:
         return {"valid": False, "status": "Invalid", "message": "❌ Invalid QR Code", "color": "red"}
 
-    filters = {"guest_code": guest_code}
-    if occasion_name:
-        filters["parent"] = occasion_name
+    if not frappe.db.exists("Occasion", occasion_name):
+        return {"valid": False, "status": "Invalid", "message": "❌ Invalid QR Code", "color": "red"}
+
+    filters = {"guest_code": guest_code, "parent": occasion_name}
 
     results = frappe.db.get_all(
         "Occasion Guest",

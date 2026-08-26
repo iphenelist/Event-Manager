@@ -21,21 +21,18 @@
   "col_break_2",
   "contact_2",
   "status",
-  "client_user",
   "card_tab",
-  "card_section",
-  "card_design",
-  "design_layout_btn",
-  "column_break_liqk",
-  "card_design_preview",
-  "card_layout",
-  "card_preview_image",
   "card_style_section",
   "name_font_size",
   "name_font",
   "col_break_card_style",
   "card_type_color",
   "name_color",
+  "card_section",
+  "card_design",
+  "column_break_liqk",
+  "card_design_preview",
+  "card_preview_image",
   "guests_tab",
   "guests_section",
   "guests",
@@ -46,6 +43,7 @@
   "send_sms_btn",
   "checkin_section",
   "allow_reentry",
+  "open_gate_checkin_btn",
   "ocassion_statistics_tab",
   "statistics_html"
  ],
@@ -136,13 +134,6 @@
    "options": "Draft\nActive\nCompleted"
   },
   {
-   "description": "The client/vendor User account allowed to view this event's status on the portal (/my-occasions). Leave blank if this event has no portal access.",
-   "fieldname": "client_user",
-   "fieldtype": "Link",
-   "label": "Client / Vendor",
-   "options": "User"
-  },
-  {
    "fieldname": "card_section",
    "fieldtype": "Section Break",
    "label": "Invitation Card Design"
@@ -160,14 +151,7 @@
    "options": "card_preview_image"
   },
   {
-   "description": "JSON positions (as % of image width/height) for guest name, card type, code, and QR code, set via the Design Card Layout button. Leave blank to use the default bottom-left/bottom-right layout.",
-   "fieldname": "card_layout",
-   "fieldtype": "Long Text",
-   "hidden": 1,
-   "label": "Card Layout (JSON)"
-  },
-  {
-   "description": "Sample composited card (guest name/type/code/QR overlaid per the current layout). Regenerated whenever the layout is saved.",
+   "description": "Sample composited card (guest name/type/QR badge overlaid on the design).",
    "fieldname": "card_preview_image",
    "fieldtype": "Attach Image",
    "hidden": 1,
@@ -179,12 +163,6 @@
    "label": "Generate All Cards"
   },
   {
-   "fieldname": "design_layout_btn",
-   "fieldtype": "Button",
-   "label": "\ud83c\udfa8 Design Card Layout"
-  },
-  {
-   "description": "Used only when no custom Card Layout has been designed",
    "fieldname": "card_style_section",
    "fieldtype": "Section Break",
    "label": "Card Text Style"
@@ -259,6 +237,11 @@
    "label": "Allow Re-entry (QR scan twice)"
   },
   {
+   "fieldname": "open_gate_checkin_btn",
+   "fieldtype": "Button",
+   "label": "🚪 Open Gate Check-in Link"
+  },
+  {
    "fieldname": "card_tab",
    "fieldtype": "Tab Break",
    "label": "Card"
@@ -287,7 +270,7 @@
  "image_field": "card_design",
  "links": [],
  "make_attachments_public": 1,
- "modified": "2026-07-27 17:47:32.803674",
+ "modified": "2026-08-11 16:48:55.520094",
  "modified_by": "Administrator",
  "module": "Event Manager",
  "name": "Occasion",
@@ -316,10 +299,6 @@
    "role": "Event Manager",
    "share": 1,
    "write": 1
-  },
-  {
-   "read": 1,
-   "role": "Occasion Client"
   }
  ],
  "row_format": "Dynamic",

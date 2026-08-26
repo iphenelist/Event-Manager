@@ -2,11 +2,12 @@ import frappe
 
 
 def after_install():
-    # Create Occasion Manager role
-    if not frappe.db.exists("Role", "Occasion Manager"):
+    # Create the "Event Manager" role — the one actually granted access in
+    # occasion.json's DocType permissions.
+    if not frappe.db.exists("Role", "Event Manager"):
         r = frappe.new_doc("Role")
-        r.role_name = "Occasion Manager"
+        r.role_name = "Event Manager"
         r.insert(ignore_permissions=True)
 
     frappe.db.commit()
-    print("✅ Occasion Manager installed successfully!")
+    print("✅ Event Manager role installed successfully!")

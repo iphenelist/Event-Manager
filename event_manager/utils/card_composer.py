@@ -1,7 +1,6 @@
 import frappe
 import os
 import io
-import json
 from PIL import Image, ImageDraw, ImageFont
 from event_manager.utils.qr_generator import generate_qr
 
@@ -49,91 +48,106 @@ def hex_to_rgb(hex_color: str):
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
 
-def compose_card_image(occasion_doc, name_text: str, type_text: str, code_text: str, layout_override: dict = None) -> Image.Image:
-    """Build the composited card image for the given display text.
+def compose_card_image(occasion_doc, name_text: str, type_text: str, code_text: str, guest_code: str = None) -> Image.Image:
+    """Build the composited card image: a bottom-right white badge box with
+    the QR code on top, guest name (bold, caps, wraps onto up to 3 lines for
+    long names) and card type (smaller, muted) stacked below it.
 
-    Used both for real guest cards and for the layout designer's preview
-    (with sample text and, optionally, an in-progress unsaved layout).
+    Used both for real guest cards and for the sample preview (with
+    placeholder text).
     """
     card_img = load_card_image(occasion_doc.card_design)
     width, height = card_img.size
 
     draw = ImageDraw.Draw(card_img)
 
-    layout = layout_override
-    if layout is None and occasion_doc.card_layout:
-        try:
-            layout = json.loads(occasion_doc.card_layout)
-        except (ValueError, TypeError):
-            layout = None
+    name_rgb = hex_to_rgb(occasion_doc.name_color or "#1A1A1A")
+    type_rgb = hex_to_rgb(occasion_doc.card_type_color or "#777777")
 
-    if layout:
-        # Custom positions from the drag-and-drop designer, stored as % of
-        # image width (x, font_size, qr size) / height (y).
-        def pct(cfg, key, default):
-            try:
-                return float(cfg.get(key, default))
-            except (TypeError, ValueError):
-                return default
+    margin = int(width * 0.025)
+    box_width = int(width * 0.16)
+    pad = int(box_width * 0.09)
+    gap = int(box_width * 0.05)
 
-        name_cfg = layout.get("guest_name", {})
-        type_cfg = layout.get("card_type", {})
-        code_cfg = layout.get("guest_code", {})
-        qr_cfg   = layout.get("qr", {})
+    qr_size = box_width - 2 * pad
+    inner_width = box_width - 2 * pad
+    display_name = name_text.upper()
+    raw_type = type_text.strip()
+    display_type = raw_type if len(raw_type) <= 3 else raw_type.title()
 
-        name_font_size = max(int(width * pct(name_cfg, "font_size", 4.5) / 100), 6)
-        type_font_size = max(int(width * pct(type_cfg, "font_size", 2.5) / 100), 6)
-        code_font_size = max(int(width * pct(code_cfg, "font_size", 1.75) / 100), 6)
+    def wrap_lines(text, font, max_width):
+        words = text.split()
+        lines, current = [], ""
+        for word in words:
+            trial = f"{current} {word}".strip()
+            if draw.textbbox((0, 0), trial, font=font)[2] <= max_width or not current:
+                current = trial
+            else:
+                lines.append(current)
+                current = word
+        if current:
+            lines.append(current)
+        return lines
 
-        name_rgb = hex_to_rgb(name_cfg.get("color") or occasion_doc.name_color or "#8B6914")
-        type_rgb = hex_to_rgb(type_cfg.get("color") or occasion_doc.card_type_color or "#C8960C")
-        code_rgb = hex_to_rgb(code_cfg.get("color") or "#555555")
+    def truncate_to_fit(text, font, max_width):
+        if draw.textbbox((0, 0), text, font=font)[2] <= max_width:
+            return text
+        while text and draw.textbbox((0, 0), text + "…", font=font)[2] > max_width:
+            text = text[:-1]
+        return (text + "…") if text else text
 
+    # Wrap long names onto up to 3 lines; only shrink the font if a
+    # single word still doesn't fit the box width even wrapped.
+    name_font_size = max(int(box_width * 0.115), 10)
+    while True:
         name_font = get_font(name_font_size, bold=True)
-        type_font = get_font(type_font_size, bold=True)
-        code_font = get_font(code_font_size, bold=False)
+        name_lines = wrap_lines(display_name, name_font, inner_width)
+        widest = max(draw.textbbox((0, 0), line, font=name_font)[2] for line in name_lines)
+        if (widest <= inner_width and len(name_lines) <= 3) or name_font_size <= 8:
+            break
+        name_font_size -= 1
 
-        name_x, name_y = int(width * pct(name_cfg, "x", 5) / 100), int(height * pct(name_cfg, "y", 88) / 100)
-        type_x, type_y = int(width * pct(type_cfg, "x", 5) / 100), int(height * pct(type_cfg, "y", 92) / 100)
-        code_x, code_y = int(width * pct(code_cfg, "x", 5) / 100), int(height * pct(code_cfg, "y", 95.5) / 100)
+    # Last-resort safety net: a single word with no spaces (e.g. a name
+    # typed without one) can still overflow the box even at the floor font
+    # size — truncate it instead of letting it spill past the badge edge.
+    name_lines = [truncate_to_fit(line, name_font, inner_width) for line in name_lines[:3]]
 
-        draw.text((name_x, name_y), name_text, font=name_font, fill=name_rgb)
-        draw.text((type_x, type_y), type_text, font=type_font, fill=type_rgb)
-        draw.text((code_x, code_y), code_text, font=code_font, fill=code_rgb)
+    line_height = int(name_font_size * 1.25)
+    name_block_height = line_height * len(name_lines)
 
-        qr_size = max(int(width * pct(qr_cfg, "size", 22) / 100), 20)
-        qr_x = int(width * pct(qr_cfg, "x", 75) / 100)
-        qr_y = int(height * pct(qr_cfg, "y", 74) / 100)
-    else:
-        name_font_size = int(occasion_doc.name_font_size or 36)
-        name_color     = occasion_doc.name_color or "#8B6914"
-        type_color     = occasion_doc.card_type_color or "#C8960C"
-        code_color     = "#555555"
+    type_font = get_font(max(int(box_width * 0.085), 8), bold=False)
+    type_bbox = draw.textbbox((0, 0), display_type, font=type_font)
+    type_w, type_h = type_bbox[2] - type_bbox[0], type_bbox[3] - type_bbox[1]
 
-        name_rgb = hex_to_rgb(name_color)
-        type_rgb = hex_to_rgb(type_color)
-        code_rgb = hex_to_rgb(code_color)
+    box_height = pad + qr_size + gap + name_block_height + int(gap * 0.5) + type_h + pad
 
-        name_font = get_font(name_font_size, bold=True)
-        type_font = get_font(int(name_font_size * 0.55), bold=True)
-        code_font = get_font(int(name_font_size * 0.38), bold=False)
+    box_x2, box_y2 = width - margin, height - margin
+    box_x1, box_y1 = box_x2 - box_width, box_y2 - box_height
 
-        # Position 1 — bottom left: guest name, card type, code
-        name_x = int(width * 0.05)
-        name_y = int(height * 0.88)
-        type_y = name_y + name_font_size + 8
-        code_y = type_y + int(name_font_size * 0.55) + 6
+    draw.rounded_rectangle(
+        [box_x1, box_y1, box_x2, box_y2],
+        radius=max(int(box_width * 0.035), 4),
+        fill=(255, 255, 255, 255),
+        outline=(220, 220, 220, 255),
+        width=1,
+    )
 
-        draw.text((name_x, name_y), name_text, font=name_font, fill=name_rgb)
-        draw.text((name_x, type_y), type_text, font=type_font, fill=type_rgb)
-        draw.text((name_x, code_y), code_text, font=code_font, fill=code_rgb)
+    qr_x = box_x1 + (box_width - qr_size) // 2
+    qr_y = box_y1 + pad
 
-        # Position 2 — bottom right: QR code
-        qr_size = int(width * 0.22)
-        qr_x    = width - qr_size - int(width * 0.03)
-        qr_y    = height - qr_size - int(height * 0.04)
+    name_y = qr_y + qr_size + gap
+    for line in name_lines:
+        line_bbox = draw.textbbox((0, 0), line, font=name_font)
+        line_w = line_bbox[2] - line_bbox[0]
+        line_x = box_x1 + (box_width - line_w) // 2
+        draw.text((line_x - line_bbox[0], name_y - line_bbox[1]), line, font=name_font, fill=name_rgb)
+        name_y += line_height
 
-    qr_buffer = generate_qr(code_text, occasion_doc.name)
+    type_x = box_x1 + (box_width - type_w) // 2
+    type_y = name_y + int(gap * 0.5)
+    draw.text((type_x - type_bbox[0], type_y - type_bbox[1]), display_type, font=type_font, fill=type_rgb)
+
+    qr_buffer = generate_qr(guest_code or code_text, occasion_doc.name)
     qr_img = Image.open(qr_buffer).convert("RGBA")
     qr_img = qr_img.resize((qr_size, qr_size), Image.LANCZOS)
     card_img.paste(qr_img, (qr_x, qr_y), qr_img)
@@ -143,7 +157,8 @@ def compose_card_image(occasion_doc, name_text: str, type_text: str, code_text: 
 
 def compose_card(occasion_doc, guest_row):
     card_img = compose_card_image(
-        occasion_doc, guest_row.guest_name, guest_row.card_type, f"Code: {guest_row.guest_code}"
+        occasion_doc, guest_row.guest_name, guest_row.card_type,
+        f"Code: {guest_row.guest_code}", guest_code=guest_row.guest_code
     )
 
     # Save final card as JPEG
@@ -172,32 +187,30 @@ def compose_card(occasion_doc, guest_row):
 
 
 @frappe.whitelist()
-def compose_single_guest(occasion_name: str, guest_name_field: str):
-    """Whitelisted: compose card for a single guest by name"""
+def compose_single_guest(occasion_name: str, guest_row_name: str):
+    """Whitelisted: compose card for a single guest by its (unique) child row name"""
     occasion = frappe.get_doc("Occasion", occasion_name)
     for guest in occasion.guests:
-        if guest.guest_name == guest_name_field:
+        if guest.name == guest_row_name:
             compose_card(occasion, guest)
             occasion.save()
             return {"success": True, "card_image": guest.card_image}
-    frappe.throw(f"Guest '{guest_name_field}' not found in occasion '{occasion_name}'")
+    frappe.throw(f"Guest row '{guest_row_name}' not found in occasion '{occasion_name}'")
 
 
 @frappe.whitelist()
-def generate_preview(occasion_name: str, layout: str = None):
+def generate_preview(occasion_name: str):
     """Whitelisted: (re)generate the styled sample preview shown as Card Design Preview.
 
     Uses placeholder guest text so it can run any time — even before any real
-    guests exist. If `layout` (JSON string) is passed, it previews that
-    in-progress layout instead of what's already saved on the Occasion.
+    guests exist.
     """
     occasion = frappe.get_doc("Occasion", occasion_name)
     if not occasion.card_design:
         frappe.throw("Please upload a Card Design image first.")
 
-    layout_override = json.loads(layout) if layout else None
     card_img = compose_card_image(
-        occasion, "Jina la Mgeni", "SINGLE", "Code: 000000", layout_override=layout_override
+        occasion, "Jina la Mgeni", "SINGLE", "Code: 000000", guest_code="000000"
     )
 
     output_buffer = io.BytesIO()

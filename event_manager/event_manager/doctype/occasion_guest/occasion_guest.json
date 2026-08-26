@@ -77,7 +77,8 @@
    "fieldname": "guest_code",
    "fieldtype": "Data",
    "label": "Guest Code",
-   "read_only": 1
+   "read_only": 1,
+   "unique": 1
   },
   {
    "fieldname": "download_url",
