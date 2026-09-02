@@ -4,6 +4,24 @@ import string
 from frappe.model.document import Document
 
 
+def get_permission_query_conditions(user=None):
+    """Restrict Occasion list/report views to the assigned user, unless System Manager."""
+    if not user:
+        user = frappe.session.user
+    if "System Manager" in frappe.get_roles(user):
+        return ""
+    return f"`tabOccasion`.`assigned_user` = {frappe.db.escape(user)}"
+
+
+def has_permission(doc, ptype="read", user=None):
+    """Restrict direct Occasion access to the assigned user, unless System Manager."""
+    if not user:
+        user = frappe.session.user
+    if "System Manager" in frappe.get_roles(user):
+        return True
+    return doc.assigned_user == user
+
+
 class Occasion(Document):
 
     def before_save(self):

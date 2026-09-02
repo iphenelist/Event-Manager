@@ -123,8 +123,18 @@ app_license = "mit"
 # Permissions
 # -----------
 # Occasion is staff-only: only the roles listed in its DocType permissions
-# (System Manager, Event Manager) can see or touch it. No portal/client
-# access exists, so no custom permission hooks are needed here.
+# (System Manager, Event Manager) can see or touch it. An Occasion is
+# assigned to one specific user (assigned_user, settable only by a System
+# Manager via permlevel 1) and, unless the requester is a System Manager,
+# is only visible to that assigned user.
+
+permission_query_conditions = {
+    "Occasion": "event_manager.event_manager.doctype.occasion.occasion.get_permission_query_conditions",
+}
+
+has_permission = {
+    "Occasion": "event_manager.event_manager.doctype.occasion.occasion.has_permission",
+}
 
 website_route_rules = [
     {"from_route": "/invitee/download/occasion-card/<guest_code>", "to_route": "invitee/download/occasion-card"},

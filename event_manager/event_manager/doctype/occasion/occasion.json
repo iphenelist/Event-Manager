@@ -21,6 +21,7 @@
   "col_break_2",
   "contact_2",
   "status",
+  "assigned_user",
   "card_tab",
   "card_style_section",
   "name_font_size",
@@ -132,6 +133,16 @@
    "in_list_view": 1,
    "label": "Status",
    "options": "Draft\nActive\nCompleted"
+  },
+  {
+   "description": "Only this user (with the Event Manager role) and System Manager can see this occasion. Only a System Manager can set/change this.",
+   "fieldname": "assigned_user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Assigned To",
+   "options": "User",
+   "permlevel": 1
   },
   {
    "fieldname": "card_section",
@@ -299,6 +310,18 @@
    "role": "Event Manager",
    "share": 1,
    "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "Event Manager",
+   "write": 0
   }
  ],
  "row_format": "Dynamic",
