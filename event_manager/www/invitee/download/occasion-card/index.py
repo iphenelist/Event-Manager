@@ -1,4 +1,5 @@
 import frappe
+from frappe.rate_limiter import rate_limit
 
 
 def get_context(context):
@@ -39,3 +40,25 @@ def get_context(context):
         context.card_download_url = url if url.startswith("http") else f"{base}{url}"
     else:
         context.card_download_url = None
+
+
+@frappe.whitelist(allow_guest=True)
+@rate_limit(limit=20, seconds=60)
+def confirm_rsvp(guest_code: str, status: str):
+    """Guest RSVP confirmation from the invitation page."""
+    if status not in ("Confirmed", "Declined"):
+        frappe.throw("Invalid RSVP status")
+
+    results = frappe.db.get_all(
+        "Occasion Guest",
+        filters={"guest_code": guest_code},
+        fields=["name"],
+        limit=1
+    )
+    if not results:
+        frappe.throw("This invitation link is invalid or has expired.", frappe.DoesNotExistError)
+
+    frappe.db.set_value("Occasion Guest", results[0]["name"], "rsvp_status", status)
+    frappe.db.commit()
+
+    return {"success": True, "rsvp_status": status}

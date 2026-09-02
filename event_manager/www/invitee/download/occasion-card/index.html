@@ -66,6 +66,34 @@
   </a>
   {% endif %}
 
+  <div id="rsvpBlock" style="font-family:sans-serif; margin-bottom:12px;">
+    <div id="rsvpPrompt" style="{% if guest.rsvp_status and guest.rsvp_status != 'Pending' %}display:none;{% endif %}">
+      <p style="font-size:13px; color:#8B5E4A; margin:0 0 8px;">Utahudhuria?</p>
+      <div style="display:flex; gap:10px;">
+        <button onclick="sendRsvp('Confirmed')"
+                style="flex:1; background:#2E7D32; color:#fff; border:none; padding:12px;
+                       border-radius:8px; font-size:14px; cursor:pointer;">
+          ✅ Nitahudhuria
+        </button>
+        <button onclick="sendRsvp('Declined')"
+                style="flex:1; background:#fff; color:#B3261E; border:1px solid #B3261E; padding:12px;
+                       border-radius:8px; font-size:14px; cursor:pointer;">
+          ❌ Sitahudhuria
+        </button>
+      </div>
+    </div>
+    <div id="rsvpResult" style="{% if not guest.rsvp_status or guest.rsvp_status == 'Pending' %}display:none;{% endif %}
+                                 padding:12px; border-radius:8px; font-size:14px;
+                                 background:{% if guest.rsvp_status == 'Confirmed' %}#E8F5E9{% else %}#FDECEA{% endif %};
+                                 color:{% if guest.rsvp_status == 'Confirmed' %}#2E7D32{% else %}#B3261E{% endif %};">
+      <span id="rsvpResultText">
+        {% if guest.rsvp_status == 'Confirmed' %}✅ Umethibitisha kuhudhuria. Asante!
+        {% elif guest.rsvp_status == 'Declined' %}❌ Umethibitisha kutohudhuria. Asante kwa kutujulisha.
+        {% endif %}
+      </span>
+    </div>
+  </div>
+
   {% if occasion.contact_1 or occasion.contact_2 %}
   <p style="font-size:12px; color:#aaa; font-family:sans-serif; margin-top:16px;">
     Mawasiliano:
@@ -75,4 +103,31 @@
   {% endif %}
 
 </div>
+
+<script>
+const RSVP_GUEST_CODE = "{{ guest.guest_code }}";
+
+function sendRsvp(status) {
+  fetch("/api/method/event_manager.www.invitee.download.occasion-card.index.confirm_rsvp", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Frappe-CSRF-Token": "{{ frappe.session.csrf_token }}"
+    },
+    body: JSON.stringify({ guest_code: RSVP_GUEST_CODE, status: status })
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.message || !data.message.success) throw new Error("failed");
+      document.getElementById("rsvpPrompt").style.display = "none";
+      const box = document.getElementById("rsvpResult");
+      box.style.display = "block";
+      box.style.background = status === "Confirmed" ? "#E8F5E9" : "#FDECEA";
+      box.style.color = status === "Confirmed" ? "#2E7D32" : "#B3261E";
+      document.getElementById("rsvpResultText").textContent =
+        status === "Confirmed" ? "✅ Umethibitisha kuhudhuria. Asante!" : "❌ Umethibitisha kutohudhuria. Asante kwa kutujulisha.";
+    })
+    .catch(() => alert("Imeshindikana kutuma. Tafadhali jaribu tena."));
+}
+</script>
 {% endblock %}

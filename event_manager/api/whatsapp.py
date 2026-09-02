@@ -1,57 +1,58 @@
 import frappe
 import requests
 
-WABA_BASE_URL = "https://notify-web-assistant-api.beagile.africa"
+WASENDER_BASE_URL = "https://www.wasenderapi.com/api"
 
 
 def get_credentials():
-    api_token = frappe.conf.get("notify_africa_waba_token") or frappe.conf.get("notify_africa_api_token")
+    api_token = frappe.conf.get("wasender_api_token")
     if not api_token:
-        frappe.throw("notify_africa_waba_token (or notify_africa_api_token) is not set in site_config.json")
+        frappe.throw("wasender_api_token is not set in site_config.json")
     return api_token
 
 
 def normalize_phone(phone: str) -> str:
-    return phone.replace("+", "").replace(" ", "").replace("-", "")
+    """Return the phone number as digits with country code (e.g. 255712345678), no '+', as required by WaSenderAPI"""
+    return "".join(ch for ch in phone if ch.isdigit())
 
 
 def send_text(phone: str, text: str) -> dict:
-    """Send a plain WhatsApp text message via the Notify Africa WABA API"""
+    """Send a plain WhatsApp text message via the WaSenderAPI"""
     api_token = get_credentials()
 
     response = requests.post(
-        f"{WABA_BASE_URL}/v1/waba-api/messages/text",
+        f"{WASENDER_BASE_URL}/send-message",
         headers={
             "Authorization": f"Bearer {api_token}",
             "Content-Type": "application/json",
         },
-        json={"to": [normalize_phone(phone)], "text": text},
+        json={"to": normalize_phone(phone), "text": text},
         timeout=30,
     )
     if not response.ok:
-        frappe.throw(f"Notify Africa WABA API error ({response.status_code}): {response.text}")
+        frappe.throw(f"WaSenderAPI error ({response.status_code}): {response.text}")
     return response.json()
 
 
-def send_template(phone: str, template_name: str, template_parameters: dict) -> dict:
-    """Send an approved WhatsApp template message via the Notify Africa WABA API"""
+def send_image(phone: str, image_url: str, caption: str = "") -> dict:
+    """Send a WhatsApp image message (with optional caption) via the WaSenderAPI"""
     api_token = get_credentials()
 
+    payload = {"to": normalize_phone(phone), "imageUrl": image_url}
+    if caption:
+        payload["text"] = caption
+
     response = requests.post(
-        f"{WABA_BASE_URL}/v1/waba-api/messages/template",
+        f"{WASENDER_BASE_URL}/send-message",
         headers={
             "Authorization": f"Bearer {api_token}",
             "Content-Type": "application/json",
         },
-        json={
-            "to": [normalize_phone(phone)],
-            "template_name": template_name,
-            "template_parameters": template_parameters,
-        },
+        json=payload,
         timeout=30,
     )
     if not response.ok:
-        frappe.throw(f"Notify Africa WABA API error ({response.status_code}): {response.text}")
+        frappe.throw(f"WaSenderAPI error ({response.status_code}): {response.text}")
     return response.json()
 
 
@@ -61,29 +62,50 @@ def build_invitation_message(occasion_doc, guest_row) -> str:
     base = frappe.utils.get_url().rstrip("/")
     download_url = f"{base}/invitee/download/occasion-card/{guest_row.guest_code}"
 
-    dress_line = f" DRESS CODE: {occasion_doc.dress_code}." if occasion_doc.dress_code else ""
-
     contacts = ""
     if occasion_doc.contact_1 and occasion_doc.contact_2:
         contacts = f"{occasion_doc.contact_1} na {occasion_doc.contact_2}"
     elif occasion_doc.contact_1:
         contacts = occasion_doc.contact_1
-    contacts_line = f" MAWASILIANO: {contacts}." if contacts else ""
 
-    return (
-        f"Habari {guest_row.guest_name}, Unakaribishwa kwenye {occasion_doc.occasion_name}, "
-        f"Kadi yako ni {guest_row.card_type} Na Code yako ni {guest_row.guest_code}. "
-        f"Tarehe: {date_str}, Ukumbi: {occasion_doc.venue_name}. "
-        f"MUDA: Saa {occasion_doc.occasion_time} ALASIRI."
-        f"{dress_line}"
-        f"{contacts_line} "
-        f"Fika na sms hii au Download card yako kwa kubonyeza link hii\n"
-        f"{download_url}"
-    )
+    lines = [
+        f"Habari {guest_row.guest_name},",
+        f"Unakaribishwa kwenye {occasion_doc.occasion_name}.",
+        "",
+        f"Kadi: {guest_row.card_type}",
+        f"Namba ya Kadi: {guest_row.guest_code}",
+        f"Tarehe: {date_str}",
+        f"Ukumbi: {occasion_doc.venue_name}",
+        f"Muda: Saa {occasion_doc.occasion_time} ALASIRI",
+    ]
+    if occasion_doc.dress_code:
+        lines.append(f"Dress Code: {occasion_doc.dress_code}")
+    if contacts:
+        lines.append(f"Mawasiliano: {contacts}")
+    lines += [
+        "",
+        "Fika na ujumbe huu au pakua kadi yako kwenye link hii:",
+        download_url,
+    ]
+
+    return "\n".join(lines)
+
+
+def get_card_image_url(guest_row) -> str:
+    """Build an absolute, publicly reachable URL for the guest's card image"""
+    base = frappe.utils.get_url().rstrip("/")
+    url = guest_row.card_image
+    return url if url.startswith("http") else f"{base}{url}"
 
 
 def send_invitation(occasion_doc, guest_row) -> dict:
-    """Send the invitation text (with card download link) to a guest via WhatsApp"""
+    """Send the invitation text (with card download link) to a guest via WhatsApp
+
+    Sends text-only for now: the card image lives at a local dev URL
+    (frappe.utils.get_url()) that WaSenderAPI's servers can't reach to fetch
+    the image. Once the site is on a public domain, swap this for
+    send_image(guest_row.phone, get_card_image_url(guest_row), caption=message).
+    """
     if not guest_row.phone:
         frappe.throw(f"No phone number for {guest_row.guest_name}")
     if not guest_row.card_image:
